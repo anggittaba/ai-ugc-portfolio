@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Anggit Taba — AI UGC Producer</title>
+<meta name="description" content="Anggit Taba — AI UGC producer. End-to-end AI video pipeline: research, script, generate, edit, post, iterate.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700;9..144,900&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* Hallmark · pre-emit critique: P5 H4 E5 S4 R5 V4 — editorial broadsheet, left-biased, no slop markers */
+:root{
+  --color-paper:#f6f3ea;
+  --color-paper-2:#efe9d9;
+  --color-ink:#17130c;
+  --color-muted:#6e6656;
+  --color-line:#ddd4bd;
+  --color-accent:#c2410c;
+  --color-accent-soft:#f5e3d3;
+  --font-display:"Fraunces",Georgia,"Times New Roman",serif;
+  --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+  --font-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{overflow-x:clip}
+body{background:var(--color-paper);color:var(--color-ink);font-family:var(--font-body);line-height:1.65;font-size:17px;-webkit-font-smoothing:antialiased}
+a{color:var(--color-ink)}
+.wrap{max-width:1080px;margin:0 auto;padding:0 28px}
+
+/* Masthead */
+.masthead{border-bottom:2px solid var(--color-ink);padding:18px 0 14px;display:flex;justify-content:space-between;align-items:baseline;gap:16px;flex-wrap:wrap}
+.masthead .name{font-family:var(--font-display);font-weight:900;font-size:22px;letter-spacing:-0.01em}
+.masthead .role{font-family:var(--font-mono);font-size:12.5px;color:var(--color-muted);text-transform:uppercase;letter-spacing:0.08em}
+
+/* Hero — left-biased editorial */
+.hero{padding:72px 0 64px;display:grid;grid-template-columns:minmax(0,7fr) minmax(0,4fr);gap:48px;align-items:start}
+.hero h1{font-family:var(--font-display);font-style:normal;font-weight:900;font-size:clamp(40px,6vw,76px);line-height:1.02;letter-spacing:-0.02em;overflow-wrap:anywhere;min-width:0;margin-bottom:26px}
+.hero h1 .u{text-decoration:underline;text-decoration-color:var(--color-accent);text-decoration-thickness:0.09em;text-underline-offset:0.14em}
+.lede{font-size:19px;color:var(--color-ink);max-width:34em;margin-bottom:34px}
+.lede strong{font-weight:700}
+.cta-row{display:flex;gap:28px;flex-wrap:wrap}
+.cta{font-family:var(--font-mono);font-size:14px;font-weight:500;text-decoration:none;border-bottom:2px solid var(--color-accent);padding-bottom:3px}
+.cta:hover{background:var(--color-accent-soft)}
+.facts{border-left:1px solid var(--color-line);padding-left:28px;font-size:14.5px}
+.facts dt{font-family:var(--font-mono);font-size:11.5px;text-transform:uppercase;letter-spacing:0.1em;color:var(--color-muted);margin-top:18px}
+.facts dt:first-child{margin-top:0}
+.facts dd{margin:2px 0 0;font-weight:600}
+
+/* Sections */
+section.block{padding:56px 0;border-top:1px solid var(--color-line)}
+.block-head{margin-bottom:34px;max-width:40em}
+.block-head h2{font-family:var(--font-display);font-style:normal;font-weight:700;font-size:clamp(28px,4vw,42px);letter-spacing:-0.015em;line-height:1.1;margin-bottom:12px}
+.block-head p{color:var(--color-muted);font-size:17px}
+
+/* Channel entries — hairline-separated list, no cards */
+.channel{border-top:1px solid var(--color-line);padding:30px 0;display:grid;grid-template-columns:minmax(0,4fr) minmax(0,7fr);gap:32px}
+.channel:last-of-type{border-bottom:1px solid var(--color-line)}
+.channel .handle{font-family:var(--font-mono);font-size:13px;color:var(--color-accent);font-weight:500;margin-bottom:10px}
+.channel h3{font-family:var(--font-display);font-style:normal;font-weight:700;font-size:26px;letter-spacing:-0.01em;margin-bottom:6px}
+.channel p{color:var(--color-ink);font-size:16px;max-width:44em}
+.channel .meta{margin-top:14px;font-family:var(--font-mono);font-size:12.5px;color:var(--color-muted)}
+.channel .meta b{color:var(--color-ink);font-weight:500}
+.channel .open{display:inline-block;margin-top:16px;font-family:var(--font-mono);font-size:14px;text-decoration:none;border-bottom:2px solid var(--color-accent);padding-bottom:2px}
+.channel .open:hover{background:var(--color-accent-soft)}
+
+/* Process — genuinely ordinal, vertical stack */
+.step{display:grid;grid-template-columns:72px minmax(0,1fr);gap:24px;padding:26px 0;border-top:1px solid var(--color-line)}
+.steps .step:last-child{border-bottom:1px solid var(--color-line)}
+.step .num{font-family:var(--font-display);font-weight:900;font-size:34px;color:var(--color-accent);line-height:1}
+.step h3{font-family:var(--font-display);font-style:normal;font-weight:700;font-size:21px;margin-bottom:6px}
+.step p{color:var(--color-ink);font-size:16px;max-width:46em}
+
+/* Toolkit — definition rows */
+.tool-row{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,8fr);gap:24px;padding:16px 0;border-top:1px solid var(--color-line);font-size:16px}
+.tool-rows .tool-row:last-child{border-bottom:1px solid var(--color-line)}
+.tool-row .t{font-weight:700}
+.tool-row .d{color:var(--color-muted)}
+
+/* Notes list */
+.notes{list-style:none}
+.notes li{padding:14px 0 14px 28px;border-top:1px solid var(--color-line);position:relative;font-size:16px;max-width:48em}
+.notes li:last-child{border-bottom:1px solid var(--color-line)}
+.notes li::before{content:"—";position:absolute;left:0;color:var(--color-accent);font-weight:700}
+
+/* Closer footer — statement, not sitemap */
+.closer{padding:72px 0 60px}
+.closer .big{font-family:var(--font-display);font-style:normal;font-weight:900;font-size:clamp(30px,5vw,54px);letter-spacing:-0.02em;line-height:1.08;max-width:16em;margin-bottom:24px}
+.closer .big .u{text-decoration:underline;text-decoration-color:var(--color-accent);text-decoration-thickness:0.08em;text-underline-offset:0.14em}
+.closer p{color:var(--color-muted);margin-bottom:30px;max-width:36em}
+.colophon{margin-top:56px;padding-top:20px;border-top:1px solid var(--color-line);font-family:var(--font-mono);font-size:12px;color:var(--color-muted);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.colophon a{color:var(--color-muted)}
+
+@media (max-width:768px){
+  .hero{grid-template-columns:minmax(0,1fr);gap:36px;padding:52px 0 48px}
+  .facts{border-left:none;padding-left:0;border-top:1px solid var(--color-line);padding-top:24px}
+  .channel{grid-template-columns:minmax(0,1fr);gap:12px}
+  .step{grid-template-columns:52px minmax(0,1fr);gap:16px}
+  .tool-row{grid-template-columns:minmax(0,1fr);gap:4px}
+  section.block{padding:44px 0}
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="masthead">
+    <div class="name">Anggit Taba</div>
+    <div class="role">AI UGC Producer · Manokwari, ID (UTC+9)</div>
+  </div>
+
+  <header class="hero">
+    <div>
+      <h1>AI video that reads as <span class="u">human</span>.</h1>
+      <p class="lede">I run an end-to-end AI video pipeline — <strong>research, script, generate, edit, post, iterate</strong> — producing short-form content built to hold attention, not just fill a feed.</p>
+      <div class="cta-row">
+        <a class="cta" href="https://www.tiktok.com/@althea___a" target="_blank" rel="noopener">TikTok — @althea___a</a>
+        <a class="cta" href="https://instagram.com/by.gitt" target="_blank" rel="noopener">Instagram — @by.gitt</a>
+      </div>
+    </div>
+    <dl class="facts">
+      <dt>Output</dt><dd>16 AI videos published</dd>
+      <dt>Engagement</dt><dd>237+ likes, TikTok</dd>
+      <dt>Capacity</dt><dd>10–12 videos / week</dd>
+      <dt>Availability</dt><dd>Remote · from 1 Dec 2026</dd>
+    </dl>
+  </header>
+
+  <section class="block">
+    <div class="block-head">
+      <h2>Selected channels</h2>
+      <p>Live AI-UGC properties. Every video concepted, scripted, generated, edited, and posted by me.</p>
+    </div>
+
+    <article class="channel">
+      <div>
+        <div class="handle">@althea___a · TikTok</div>
+        <h3>AI persona channel</h3>
+      </div>
+      <div>
+        <p>An AI-generated persona producing lifestyle short-form content. Sixteen videos published to date — the full loop from trend research to prompt iteration to final cut happens here, in public.</p>
+        <div class="meta"><b>Role:</b> concept · script · generation · edit &nbsp;/&nbsp; <b>Tools:</b> ChatGPT, Veo, Seedance, CapCut</div>
+        <a class="open" href="https://www.tiktok.com/@althea___a" target="_blank" rel="noopener">Open channel</a>
+      </div>
+    </article>
+
+    <article class="channel">
+      <div>
+        <div class="handle">@by.gitt · Instagram</div>
+        <h3>Product promo experiments</h3>
+      </div>
+      <div>
+        <p>Creator account used for product promotion tests — including a self-initiated Uniqlo promo series exploring hooks, pacing, and product storytelling in AI-assisted edits. Organic and unpaid; run as a format laboratory.</p>
+        <div class="meta"><b>Role:</b> concept · edit &nbsp;/&nbsp; <b>Tools:</b> ChatGPT, CapCut</div>
+        <a class="open" href="https://instagram.com/by.gitt" target="_blank" rel="noopener">Open profile</a>
+      </div>
+    </article>
+  </section>
+
+  <section class="block">
+    <div class="block-head">
+      <h2>Process</h2>
+      <p>Four steps, in order, every time. A pipeline — not a pile of experiments.</p>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="num">1</div>
+        <div><h3>Research</h3><p>Study what's winning in the niche — hooks, formats, pacing — before a single prompt is written. Nothing gets produced on a hunch.</p></div>
+      </div>
+      <div class="step">
+        <div class="num">2</div>
+        <div><h3>Script</h3><p>Draft hooks and scripts with ChatGPT, then rewrite into a native UGC voice. Ad-speak is the fastest way to get scrolled past.</p></div>
+      </div>
+      <div class="step">
+        <div class="num">3</div>
+        <div><h3>Generate</h3><p>Produce footage with Veo and Seedance, iterating prompts until faces, hands, and motion hold up to a frame-by-frame check.</p></div>
+      </div>
+      <div class="step">
+        <div class="num">4</div>
+        <div><h3>Edit &amp; ship</h3><p>Cut in CapCut — captions, sound, pacing. Post, read retention, keep the winners, kill the losers, feed the learning back into step one.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="block-head">
+      <h2>Toolkit</h2>
+      <p>Current stack. It changes as the models do.</p>
+    </div>
+    <div class="tool-rows">
+      <div class="tool-row"><div class="t">ChatGPT</div><div class="d">Scripting, hooks, ideation, prompt engineering</div></div>
+      <div class="tool-row"><div class="t">Google Veo</div><div class="d">AI video generation</div></div>
+      <div class="tool-row"><div class="t">Seedance</div><div class="d">AI video generation</div></div>
+      <div class="tool-row"><div class="t">CapCut</div><div class="d">Editing, captions, pacing, sound</div></div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="block-head">
+      <h2>On avoiding the AI look</h2>
+      <p>The difference between content that converts and content that gets flagged as synthetic:</p>
+    </div>
+    <ul class="notes">
+      <li><strong>Imperfect on purpose.</strong> Slight camera shake, natural pauses, off-center framing — synthetic content fails the moment it's too clean.</li>
+      <li><strong>Hands and faces get a frame-by-frame pass.</strong> Bad frames are regenerated, never patched.</li>
+      <li><strong>Audio sells it.</strong> Realistic voice pacing and ambient sound do more for authenticity than any visual trick.</li>
+    </ul>
+  </section>
+
+  <footer class="closer">
+    <div class="big">Available for remote AI UGC work — <span class="u">let's talk output</span>, not promises.</div>
+    <p>Based in Manokwari, Indonesia. Comfortable overlapping US hours. Start date 1 December 2026.</p>
+    <div class="cta-row">
+      <a class="cta" href="https://www.tiktok.com/@althea___a" target="_blank" rel="noopener">TikTok</a>
+      <a class="cta" href="https://instagram.com/by.gitt" target="_blank" rel="noopener">Instagram</a>
+      <a class="cta" href="https://www.linkedin.com/in/anggittaba" target="_blank" rel="noopener">LinkedIn</a>
+    </div>
+    <div class="colophon">
+      <span>Anggit Taba · AI UGC Producer</span>
+      <span>Set in Fraunces &amp; Plex Mono</span>
+    </div>
+  </footer>
+</div>
+
+</body>
+</html>
